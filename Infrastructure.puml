@@ -1,0 +1,24 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+participant Postman
+participant "API Gateway"
+participant Lambda
+participant "S3 Bucket"
+participant SQS
+participant EC2
+database RDS
+
+Postman -> "API Gateway" : GET Request with JSON payload
+"API Gateway" -> Lambda : Payload
+Lambda -> "S3 Bucket" : Writes JSON BLOB
+Lambda --> "API Gateway" : Authentication response
+"API Gateway" --> Postman : Authentication response
+"S3 Bucket" -> SQS : Writes notification with payload
+SQS -> EC2 : Mirth pulls in message
+EC2 -> EC2 : Translates message to HL7
+EC2 -> SQS : if successful, cleans up SQS queue
+EC2 -> RDS : Writes HL7 to destination
+
+@enduml
